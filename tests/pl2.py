@@ -163,6 +163,10 @@ if parameter["deblureImage"]:
     plt.title('5. Deblured Images\nBilateral Filtered')
     plt.axis('off')
 
-#edge enhancement doesn't work properly
-#cutout
+#edge enhancement doesn't work properly 
+#rectangular cutout without back edges
 #detect refractive index via cv.canny???
+
+
+#save pictures in directory with datetime (but only if desired)
+#save also parameters of pictures
