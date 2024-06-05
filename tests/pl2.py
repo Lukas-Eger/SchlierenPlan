@@ -6,6 +6,7 @@ pl2: Pipline 2
 """
 
 import cv2 as cv
+from PIL import Image, ImageEnhance
 import numpy as np
 from matplotlib import pyplot as plt
 from datetime import datetime
@@ -30,9 +31,16 @@ parameter = {
     "alpha": 2.2,   #lower contrast: alpha < 1, higher contrast alpha > 1 
     "beta": -60,    #brightness -127 < beta < 127
     
-    "edgeEnhancement": False,
-    "ddepth": cv.CV_8U,    #CV_8U, CV_16S, CV_32F, CV64_F
+    "edgeEnhancement": True,
+    "laplacianFilteredImage": False,
+    "ddepthLaplacian": cv.CV_8U,    #CV_8U, CV_16S, CV_32F, CV_64F
     "kernelSizeLaplacian": 7,
+    "pillowSharpendImage": False,
+    "factorSharpness": 7.0,
+    "sobeFilteredImage": False,
+    "kernelSizeSobelFilter": 7,
+    "ddepthSobel": cv.CV_8U,        #CV_8U, CV_16S, CV_32F, CV_64F
+    
     
     "deblureImage": True,
     "meanFilteredImage": True,
@@ -72,9 +80,25 @@ if parameter["setupContrast"]:
 
 #   x. edge enhancement with different approaches (perhaps after debluring image)
 if parameter["edgeEnhancement"]:
-    img = cv.Laplacian(img, parameter["ddepth"], ksize=parameter["kernelSizeLaplacian"])
-    cv.normalize(img, img, 0, 255, cv.NORM_MINMAX)
-    imgLaplacianFiltered = img.copy()
+#       1 laplacian filter
+        imgLaplacianFiltered = cv.Laplacian(img, parameter["ddepthLaplacian"], ksize=parameter["kernelSizeLaplacian"])
+        cv.normalize(imgLaplacianFiltered, imgLaplacianFiltered, 0, 255, cv.NORM_MINMAX)
+#       2 from pillow: image enhancer
+        img_pil = Image.fromarray(img)
+        enhancer = ImageEnhance.Sharpness(img_pil)
+        imgPillowSharpend = enhancer.enhance(parameter["factorSharpness"])
+        imgPillowSharpend = np.array(imgPillowSharpend)
+#       3 sobel filter
+        imgSobelFiltered = cv.Sobel(img, ddepth=parameter["ddepthSobel"], dx=1, dy=1, ksize=parameter["kernelSizeSobelFilter"])
+        cv.normalize(imgSobelFiltered, imgSobelFiltered, 0, 255, cv.NORM_MINMAX)
+        if parameter["laplacianFilteredImage"]:
+            img = imgLaplacianFiltered.copy()
+        elif parameter["pillowSharpendImage"]:
+            img = imgPillowSharpend.copy()
+        elif parameter["sobeFilteredImage"]:
+            img = imgSobelFiltered.copy()
+        else:
+            print("Warning: No edge enhancement was chosen although active\n")
 
 #   x. deblure img with different approaches (perhaps before edge enhancement)
 if parameter["deblureImage"]:
@@ -130,39 +154,53 @@ plt.title("3. Setup Contrast")
 plt.axis('off')
 
 #   4. plotting edge enhanced image
-plt.figure()
-fig4 = plt.subplot()
 if parameter["edgeEnhancement"]:
+    plt.figure()
+    fig4 = plt.subplot()
     fig4.imshow(imgLaplacianFiltered, cmap = 'gray')
-plt.title("4. Edge Enhancement (Laplacian Filtered)")
-plt.axis('off')
+    plt.title("x. Edge Enhancement\n(Laplacian Filtered)")
+    plt.axis('off')
+    
+    plt.figure()
+    fig5 = plt.subplot()
+    fig5.imshow(imgPillowSharpend, cmap = 'gray')
+    plt.title("x. Edge Enhancement\n(Pillow Sharpend)")
+    plt.axis('off')
+    
+    plt.figure()
+    fig5 = plt.subplot()
+    fig5.imshow(imgSobelFiltered, cmap = 'gray')
+    plt.title("x. Edge Enhancement\n(Sobel Filtered)")
+    plt.axis('off')
 
 #   5. plotting deblured image
 if parameter["deblureImage"]:
     plt.figure()
-    fig5 = plt.subplot()
-    fig5.imshow(imgMeanFiltered, cmap = 'gray')
-    plt.title('5. Deblured Images\nMean Filtered')
-    plt.axis('off')
-    
-    plt.figure()
-    fig6 = plt.subplot()
-    fig6.imshow(imgGaussianFiltered, cmap = 'gray')
-    plt.title('5. Deblured Images\nGaussian Filtered')
-    plt.axis('off')
-    
-    plt.figure()
     fig7 = plt.subplot()
-    fig7.imshow(imgMedianFiltered, cmap = 'gray')
-    plt.title('5. Deblured Images\nMedian Filtered')
+    fig7.imshow(imgMeanFiltered, cmap = 'gray')
+    plt.title('x. Deblured Images\nMean Filtered')
     plt.axis('off')
+    
     
     plt.figure()
     fig8 = plt.subplot()
-    fig8.imshow(imgBilateralFiltered, cmap = 'gray')
-    plt.title('5. Deblured Images\nBilateral Filtered')
+    fig8.imshow(imgGaussianFiltered, cmap = 'gray')
+    plt.title('x. Deblured Images\nGaussian Filtered')
+    plt.axis('off')
+    
+    plt.figure()
+    fig9 = plt.subplot()
+    fig9.imshow(imgMedianFiltered, cmap = 'gray')
+    plt.title('x. Deblured Images\nMedian Filtered')
+    plt.axis('off')
+    
+    plt.figure()
+    fig10 = plt.subplot()
+    fig10.imshow(imgBilateralFiltered, cmap = 'gray')
+    plt.title('x. Deblured Images\nBilateral Filtered')
     plt.axis('off')
 
+#debluring -> edge_enhancement ??
 #edge enhancement doesn't work properly 
 #rectangular cutout without back edges
 #detect refractive index via cv.canny???
