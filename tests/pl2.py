@@ -11,8 +11,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from datetime import datetime
 
-imgFolder = '../img/V0/'
-imgTestSubject = 'v_smart_10'
+imgFolder = '../img/V1/'
+imgTestSubject = 'h_std_05'
 imgInputSuffix = '_raw'
 imgOutputSuffix = '_pl2'
 bgImgSuffix = '_bg'
@@ -28,7 +28,7 @@ parameter = {
     "cropImage": False,
     
     "setupContrast": True,
-    "alpha": 2.2,   #lower contrast: alpha < 1, higher contrast alpha > 1 
+    "alpha": 2.0,   #lower contrast: alpha < 1, higher contrast alpha > 1 
     "beta": -60,    #brightness -127 < beta < 127
     
     "edgeEnhancement": True,
