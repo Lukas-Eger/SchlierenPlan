@@ -7,6 +7,7 @@ from datetime import datetime
 import pandas as pd
 from preprocessing import extractCameraParameter 
 from preprocessing import preprocessing  
+from segmentation import segmentation
 #Einlesen von Bildern
 %matplotlib qt
 filename="test"
@@ -67,6 +68,11 @@ img= img_undist.copy()
 imgCorrectedShading,imgCroppedImage,imgContrast,imgEdgeFiltered,imgEdgeFiltered,imgDeblured = \
 preprocessing(img_undist,imgBack_undist ,parameter)
 %matplotlib inline
+#segmentation
+
+imgSegmented=segmentation(imgDeblured,parameter)
+
+
 
 plt.figure()
 fig7 = plt.subplot()
@@ -76,6 +82,11 @@ plt.axis('off')
 plt.figure()
 plt.imshow(imgContrast,  cmap = 'gray')
 plt.title("imgContrast scheis")
+plt.show()
+
+plt.figure()
+plt.imshow(imgSegmented,  cmap = 'gray')
+plt.title("imgSegmented scheis")
 plt.show()
 
 plt.figure()
