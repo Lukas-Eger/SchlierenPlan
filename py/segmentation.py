@@ -1,0 +1,2 @@
+def segmentation():
+    return None
