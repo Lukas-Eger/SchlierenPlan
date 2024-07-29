@@ -10,9 +10,10 @@ from PIL import Image, ImageEnhance
 import numpy as np
 from matplotlib import pyplot as plt
 from datetime import datetime
+import pandas as pd
 
-imgFolder = '../img/V0/'
-imgTestSubject = 'v_smart_10'
+imgFolder = '../img/V1/'
+imgTestSubject = 'h_std_05'
 imgInputSuffix = '_raw'
 imgOutputSuffix = '_pl2'
 bgImgSuffix = '_bg'
@@ -28,7 +29,7 @@ parameter = {
     "cropImage": False,
     
     "setupContrast": True,
-    "alpha": 2.2,   #lower contrast: alpha < 1, higher contrast alpha > 1 
+    "alpha": 2.0,   #lower contrast: alpha < 1, higher contrast alpha > 1 
     "beta": -60,    #brightness -127 < beta < 127
     
     "edgeEnhancement": True,
@@ -55,9 +56,40 @@ parameter = {
     "bilateralFilterSigma": 250  #<10: no effect >150: huge effect on outcome
 }
 
+
+
+
 #read images as grayscale images
-img = cv.imread(imgFolder+imgTestSubject+imgInputSuffix+imgDataType, cv.IMREAD_GRAYSCALE)
-imgInput = img.copy()
+#img = cv.imread(imgFolder+imgTestSubject+imgInputSuffix+imgDataType, cv.IMREAD_GRAYSCALE)
+img=cv.imread('../img/V2/ancycamsy_5mm_.bmp',cv.IMREAD_GRAYSCALE)
+
+inputImg = img.copy()
+
+
+#backgournd abzeiehn
+backImg=cv.imread('../img/V2/bildohne5mm.bmp',cv.IMREAD_GRAYSCALE)
+print("lol:",cv.mean(img))
+epsilon = 1e-10
+result_uint8 = np.nan_to_num((np.mean(backImg) * (inputImg.astype(np.float64) / (backImg.astype(np.float64) + epsilon))), nan=0.0, posinf=255, neginf=0).astype(np.uint8)
+#imgWithoutBack= cv.mean(backImg)[0]*img/backImg
+
+
+#parameter einlesen
+calib_df = pd.read_json('calibration.json')
+#undistort
+mtx = np.array(calib_df.at['camera_matrix', 'values'])
+new_mtx = np.array(calib_df.at['new_camera_matrix', 'values'])
+roi = np.array(calib_df.at['roi', 'values'])
+dist_k = calib_df.at['dist_k', 'values']
+dist_p = calib_df.at['dist_p', 'values']
+dist_s = calib_df.at['dist_s', 'values']
+dist_tau = calib_df.at['dist_tau', 'values']
+dist = np.array([dist_k[0], dist_k[1], dist_p[0], dist_p[1], dist_k[2], dist_k[3], dist_k[4], dist_k[5],
+                dist_s[0], dist_s[1], dist_s[2], dist_s[3], dist_tau[0], dist_tau[1]])
+img_undist = cv.undistort(img, mtx, dist, None, new_mtx)
+img= img_undist.copy()
+
+
 if parameter["bgImgAvailable"]:
     bgImg = cv.imread(imgFolder+imgTestSubject+bgImgSuffix+imgDataType, cv.IMREAD_GRAYSCALE)
 
@@ -125,9 +157,15 @@ if parameter["deblureImage"]:
 #   0. plotting input image
 plt.figure()
 fig0 = plt.subplot()
-fig0.imshow(imgInput, cmap = 'gray')
+fig0.imshow(inputImg, cmap = 'gray')
 plt.title("0. Input Image")
 plt.axis('off')
+
+# plt.figure()
+# fig10 = plt.subplot()
+# fig10.imshow(img_undist , cmap = 'gray')
+# plt.title('x. undistorted image \n asdf')
+# plt.axis('off')
 
 #   1. plotting shading corrected image
 plt.figure()
@@ -199,6 +237,9 @@ if parameter["deblureImage"]:
     fig10.imshow(imgBilateralFiltered, cmap = 'gray')
     plt.title('x. Deblured Images\nBilateral Filtered')
     plt.axis('off')
+    
+   
+    
 
 #debluring -> edge_enhancement ??
 #edge enhancement doesn't work properly 
