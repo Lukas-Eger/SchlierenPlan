@@ -7,6 +7,7 @@ import cv2 as cv
 from matplotlib.widgets import RectangleSelector
 import cv2
 import numpy as np
+
 def extractCameraParameter(calib_df):
     mtx = np.array(calib_df.at['camera_matrix', 'values'])
     new_mtx = np.array(calib_df.at['new_camera_matrix', 'values'])
@@ -19,11 +20,7 @@ def extractCameraParameter(calib_df):
                     dist_s[0], dist_s[1], dist_s[2], dist_s[3], dist_tau[0], dist_tau[1]])
     return (mtx,dist,new_mtx)
 
-
-
-
 def preprocessing(img,imgBack ,parameter):
-        
     #pre-processing pipline
     #   1. shading correction
     imgCorrectedShading = None
@@ -94,9 +91,7 @@ def preprocessing(img,imgBack ,parameter):
             imgDeblured = img.copy()
     return (imgCorrectedShading,imgCroppedImage,imgContrast,imgEdgeFiltered,imgEdgeFiltered,imgDeblured)
 
-
 def imageCropping(image):
-    
     global x_start, y_start, x_end, y_end, cropping
     cropping = False
     x_start, y_start, x_end, y_end = 0, 0, 0, 0

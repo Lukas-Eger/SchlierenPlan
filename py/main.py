@@ -8,10 +8,15 @@ import pandas as pd
 from preprocessing import extractCameraParameter 
 from preprocessing import preprocessing  
 from segmentation import segmentation
-#Einlesen von Bildern
+
 %matplotlib qt
+
 filename="test"
+
+#reading in images
+#   img of sample
 img=cv.imread('../img/V2/ancycamsy_5mm_.bmp',cv.IMREAD_GRAYSCALE)
+#   img of background
 imgBack=cv.imread('../img/V2/bildohne5mm.bmp',cv.IMREAD_GRAYSCALE)
 
 #einlesne der Paremter
@@ -37,7 +42,6 @@ parameter = {
     "kernelSizeSobelFilter": 7,
     "ddepthSobel": cv.CV_8U,        #CV_8U, CV_16S, CV_32F, CV_64F
     
-    
     "deblureImage": True,
     "meanFilteredImage": False,
     "kernelSizeMeanFilter": 5,
@@ -51,8 +55,8 @@ parameter = {
     "bilateralFilterSigma": 250  #<10: no effect >150: huge effect on outcome
 }
 '''
-with open('config.json', 'r') as f:
-  parameter = json.load(f)
+with open('config.json', 'r') as cf:
+  parameter = json.load(cf)
 
 plt.close("all")
 #einlesen Kamerametrix
