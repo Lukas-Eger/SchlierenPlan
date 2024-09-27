@@ -1,28 +1,27 @@
 import numpy as np
 import cv2 as cv
-from PIL import Image, ImageEnhance
+import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
-import cv2 as cv
+from PIL import Image, ImageEnhance
 from matplotlib.widgets import RectangleSelector
-import cv2
-import numpy as np
+from config import getParameter, setParameter
 
-def extractCameraParameter(calib_df):
-    mtx = np.array(calib_df.at['camera_matrix', 'values'])
-    new_mtx = np.array(calib_df.at['new_camera_matrix', 'values'])
-    roi = np.array(calib_df.at['roi', 'values'])
-    dist_k = calib_df.at['dist_k', 'values']
-    dist_p = calib_df.at['dist_p', 'values']
-    dist_s = calib_df.at['dist_s', 'values']
-    dist_tau = calib_df.at['dist_tau', 'values']
-    dist = np.array([dist_k[0], dist_k[1], dist_p[0], dist_p[1], dist_k[2], dist_k[3], dist_k[4], dist_k[5],
-                    dist_s[0], dist_s[1], dist_s[2], dist_s[3], dist_tau[0], dist_tau[1]])
-    return (mtx,dist,new_mtx)
-
-def preprocessing(img,imgBack ,parameter):
-    #pre-processing pipline
-    #   1. shading correction
+def preprocessing(img,imgBack):
+    parameter = getParameter()
+    
+    #   1. image correction using camera matrix
+    imgUndist = None
+    imgBackUndist = None
+    if parameter["doImgCorrection"]:
+        mtx,dist,new_mtx = extractCameraParameter()
+        img = cv.undistort(img,mtx,dist,None,new_mtx)
+        imgUndist = img.copy()
+        if parameter["bgImgAvailable"]:
+            imgBack = cv.undistort(imgBack,mtx,dist,None,new_mtx)
+            imgBackUndist = imgBack.copy()
+    
+    #   2. shading correction
     imgCorrectedShading = None
     if parameter["bgImgAvailable"] and parameter["doShadingCorrection"]:
     #   img = img.mean() * img./imgBack
@@ -30,20 +29,24 @@ def preprocessing(img,imgBack ,parameter):
         img = np.nan_to_num((np.mean(imgBack) * (img.astype(np.float64) / (imgBack.astype(np.float64) + epsilon))), nan=0.0, posinf=255, neginf=0).astype(np.uint8)
         imgCorrectedShading = img.copy()
     
-    #   2. crop image
+    #   3. crop image
     imgCroppedImage = None
     if parameter["cropImage"]:
-        #implementation with help of PIL module
-        img=imageCropping(img)
+        cropStatus = input("Möchten Sie das Bild erneut ausschneiden? [y/n]")
+        if(cropStatus=="y"):
+            img=imageCropping(img)
+        elif(cropStatus=="n"):
+            #imgCroppedImage=img[]
+            img=img[parameter["y_start"]:parameter["y_end"],parameter["x_start"]:parameter["x_end"]]        
         imgCroppedImage = img.copy()
         
-    #   3. contrast image
+    #   4. contrast image
     imgContrast = None
     if parameter["setupContrast"]:
         img = cv.convertScaleAbs(img, alpha=parameter["alpha"], beta=parameter["beta"])
         imgContrast = img.copy()
         
-    #   x. edge enhancement with different approaches (perhaps after debluring image)
+    #   5. edge enhancement with different approaches (perhaps after debluring image)
     imgEdgeFiltered = None
     if parameter["edgeEnhancement"]:
     #       1 laplacian filter
@@ -67,7 +70,7 @@ def preprocessing(img,imgBack ,parameter):
                 print("Warning: No edge enhancement was chosen although active\n")
             imgEdgeFiltered= img.copy()
 
-    #   x. deblure img with different approaches (perhaps before edge enhancement)
+    #   6. deblure img with different approaches (perhaps before edge enhancement)
     imgDeblured= None
     if parameter["deblureImage"]:
     #       1 mean filter:
@@ -89,102 +92,66 @@ def preprocessing(img,imgBack ,parameter):
             else:
                 print("Warning: No debluring Filter was chosen although active\n")
             imgDeblured = img.copy()
-    return (imgCorrectedShading,imgCroppedImage,imgContrast,imgEdgeFiltered,imgEdgeFiltered,imgDeblured)
+    return (imgUndist,imgBackUndist,imgCorrectedShading,imgCroppedImage,imgContrast,imgEdgeFiltered,imgEdgeFiltered,imgDeblured)
 
 def imageCropping(image):
+    parameter = getParameter()
     global x_start, y_start, x_end, y_end, cropping
     cropping = False
     x_start, y_start, x_end, y_end = 0, 0, 0, 0
+    
     oriImage = image.copy()
 
     def mouse_crop(event, x, y, flags, param):
         global x_start, y_start, x_end, y_end, cropping
-        if event == cv2.EVENT_LBUTTONDOWN:
+        if event == cv.EVENT_LBUTTONDOWN:
             x_start, y_start, x_end, y_end = x, y, x, y
             cropping = True
-        elif event == cv2.EVENT_MOUSEMOVE:
+        elif event == cv.EVENT_MOUSEMOVE:
             if cropping:
                 x_end, y_end = x, y
-        elif event == cv2.EVENT_LBUTTONUP:
+        elif event == cv.EVENT_LBUTTONUP:
             x_end, y_end = x, y
             cropping = False
             refPoint = [(x_start, y_start), (x_end, y_end)]
             if len(refPoint) == 2:
                 roi = oriImage[refPoint[0][1]:refPoint[1][1], refPoint[0][0]:refPoint[1][0]]
-                cv2.imshow("Cropped", roi)
+                cv.imshow("Cropped", roi)
 
-    cv2.destroyAllWindows()
-    cv2.namedWindow("image")
-    cv2.setMouseCallback("image", mouse_crop)
+    cv.destroyAllWindows()
+    cv.namedWindow("image")
+    cv.setMouseCallback("image", mouse_crop)
 
     while True:
         i = image.copy()
         if cropping:
-            cv2.rectangle(i, (x_start, y_start), (x_end, y_end), (255, 0, 0), 2)
-        cv2.imshow("image", i)
+            cv.rectangle(i, (x_start, y_start), (x_end, y_end), (255, 0, 0), 2)
+        cv.imshow("image", i)
 
-        key = cv2.waitKey(1) & 0xFF
+        key = cv.waitKey(1) & 0xFF
         if key == ord("q"):  # Press 'q' to exit the loop
             break
 
-    cv2.destroyAllWindows()
+    cv.destroyAllWindows()
+    
+    parameter["x_start"] = x_start
+    parameter["x_end"] = x_end
+    parameter["y_start"] = y_start
+    parameter["y_end"] = y_end
+    
+    setParameter(parameter)
+    
     return oriImage[y_start:y_end, x_start:x_end]
 
-"""
-done = False
-def CropImage(img):
-
-    
-    # Callback for rectangle selection
-    def select_callback(eclick, erelease):
-        x1, y1 = int(eclick.xdata), int(eclick.ydata)
-        x2, y2 = int(erelease.xdata), int(erelease.ydata)
-        print(f"({x1}, {y1}) --> ({x2}, {y2})")
-        print(f"The buttons you used were: {eclick.button} {erelease.button}")
-        
-        # Crop the image based on the selected coordinates
-        cropped_img = img[y1:y2, x1:x2]
-        plt.figure()
-        plt.imshow(cropped_img, cmap='gray')
-        plt.title('Cropped Image')
-        plt.show()
-    
-    def toggle_selector(event):
-        print('Key pressed.')
-        if event.key == 't':
-            if selector.active:
-                print('RectangleSelector deactivated.')
-                selector.set_active(False)
-            else:
-                print('RectangleSelector activated.')
-                selector.set_active(True)
-    
-    def onselect(eclick, erelease):
-        done = True
-    # Load the image
-    
-    
-    fig, ax = plt.subplots()
-    ax.imshow(img, cmap='gray')
-    ax.set_title("Click and drag to draw a rectangle.\nPress 't' to toggle the selector on and off.")
-    
-    # Create a RectangleSelector
-    selector = RectangleSelector(
-        ax, select_callback,
-        useblit=True,
-        button=[1, 3],  # disable middle button
-        minspanx=5, minspany=5,
-        spancoords='pixels',
-        interactive=True)
-    
-    # Connect the toggle function to key press event
-    fig.canvas.mpl_connect('key_press_event', toggle_selector)
-    
-    plt.show()
-    
-    while (True):
-        if done:
-            break
-    return cropped_img
-
-"""
+def extractCameraParameter():
+    calib_df = pd.read_json('Alvium1800U-1240c_calib_df.json')
+    mtx = np.array(calib_df.at['camera_matrix', 'values'])
+    new_mtx = np.array(calib_df.at['new_camera_matrix', 'values'])
+    roi = np.array(calib_df.at['roi', 'values'])
+    dist_k = calib_df.at['dist_k', 'values']
+    dist_p = calib_df.at['dist_p', 'values']
+    dist_s = calib_df.at['dist_s', 'values']
+    dist_tau = calib_df.at['dist_tau', 'values']
+    dist = np.array([dist_k[0], dist_k[1], dist_p[0], dist_p[1], dist_k[2], dist_k[3], dist_k[4], dist_k[5],
+                    dist_s[0], dist_s[1], dist_s[2], dist_s[3], dist_tau[0], dist_tau[1]])
+    return (mtx,dist,new_mtx)

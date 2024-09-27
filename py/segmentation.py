@@ -1,6 +1,7 @@
 import cv2 as cv
+from config import getParameter, setParameter
 
-def segmentation(img,parameter):
+def segmentation(img):
     thresh2,_ = cv.threshold(img, 0, 255, cv.THRESH_OTSU)
     thresh1= round(thresh2/2,0)
     re=cv.Canny(img, thresh1,thresh2)
