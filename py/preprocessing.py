@@ -1,43 +1,47 @@
+import sys
 import numpy as np
 import cv2 as cv
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 from PIL import Image, ImageEnhance
 from matplotlib.widgets import RectangleSelector
 from config import getParameter, setParameter
 
-def preprocessing(img,imgBack):
+def preprocessing(img, imgBack):
     parameter = getParameter()
     
     #   1. image correction using camera matrix
     imgUndist = None
     imgBackUndist = None
     if parameter["doImgCorrection"]:
-        mtx,dist,new_mtx = extractCameraParameter()
-        img = cv.undistort(img,mtx,dist,None,new_mtx)
+        mtx,dist, new_mtx = extractCameraParameter()
+        img = cv.undistort(img, mtx, dist, None, new_mtx)
         imgUndist = img.copy()
         if parameter["bgImgAvailable"]:
-            imgBack = cv.undistort(imgBack,mtx,dist,None,new_mtx)
+            imgBack = cv.undistort(imgBack, mtx, dist, None, new_mtx)
             imgBackUndist = imgBack.copy()
     
     #   2. shading correction
     imgCorrectedShading = None
     if parameter["bgImgAvailable"] and parameter["doShadingCorrection"]:
-    #   img = img.mean() * img./imgBack
-        epsilon = 1e-10
-        img = np.nan_to_num((np.mean(imgBack) * (img.astype(np.float64) / (imgBack.astype(np.float64) + epsilon))), nan=0.0, posinf=255, neginf=0).astype(np.uint8)
-        imgCorrectedShading = img.copy()
+    #   img = imgBack.mean()*img/imgBack
+        imgBackMean = np.mean(imgBack)
+        imgBack_ = np.where(imgBack > 0, imgBack, 1)
+        imgCorrectedShading = ((imgBackMean.astype(np.float64) * img.astype(np.float64)) / imgBack_.astype(np.float64)).astype(np.uint8)
+        cv.normalize(imgCorrectedShading, imgCorrectedShading, 0, 255, cv.NORM_MINMAX)
+        img = imgCorrectedShading.copy()
     
     #   3. crop image
     imgCroppedImage = None
     if parameter["cropImage"]:
-        cropStatus = input("Möchten Sie das Bild erneut ausschneiden? [y/n]")
-        if(cropStatus=="y"):
-            img=imageCropping(img)
-        elif(cropStatus=="n"):
-            #imgCroppedImage=img[]
-            img=img[parameter["y_start"]:parameter["y_end"],parameter["x_start"]:parameter["x_end"]]        
+        croppedResponse = input("Would you like to crop the image (again)?\n(Otherwise, the coordinates from the parameters are used.) [y/n]: ")
+        if(croppedResponse == "y"):
+            img = imageCropping(img)
+        elif(croppedResponse == "n"):
+            img = img[parameter["y_start"]:parameter["y_end"], parameter["x_start"]:parameter["x_end"]]     
+        else:
+            sys.exit("Wrong input!")
         imgCroppedImage = img.copy()
         
     #   4. contrast image
@@ -92,17 +96,19 @@ def preprocessing(img,imgBack):
             else:
                 print("Warning: No debluring Filter was chosen although active\n")
             imgDeblured = img.copy()
-    return (imgUndist,imgBackUndist,imgCorrectedShading,imgCroppedImage,imgContrast,imgEdgeFiltered,imgEdgeFiltered,imgDeblured)
+    return (img, imgUndist, imgBackUndist, imgCorrectedShading, imgCroppedImage, imgContrast, imgEdgeFiltered, imgDeblured)
 
-def imageCropping(image):
+
+def imageCropping(img):
     parameter = getParameter()
+    
     global x_start, y_start, x_end, y_end, cropping
     cropping = False
     x_start, y_start, x_end, y_end = 0, 0, 0, 0
     
-    oriImage = image.copy()
+    imgOriginal = img.copy()
 
-    def mouse_crop(event, x, y, flags, param):
+    def mouseCropping(event, x, y, flags, param):
         global x_start, y_start, x_end, y_end, cropping
         if event == cv.EVENT_LBUTTONDOWN:
             x_start, y_start, x_end, y_end = x, y, x, y
@@ -115,33 +121,34 @@ def imageCropping(image):
             cropping = False
             refPoint = [(x_start, y_start), (x_end, y_end)]
             if len(refPoint) == 2:
-                roi = oriImage[refPoint[0][1]:refPoint[1][1], refPoint[0][0]:refPoint[1][0]]
-                cv.imshow("Cropped", roi)
+                imgCropped = imgOriginal[refPoint[0][1]:refPoint[1][1], refPoint[0][0]:refPoint[1][0]]
+                cv.imshow("cropped image (press 'q' to continue)", imgCropped)
 
     cv.destroyAllWindows()
-    cv.namedWindow("image")
-    cv.setMouseCallback("image", mouse_crop)
+    cv.namedWindow("uncropped image (draw a rectangle from the top left to the bottom right corner)")
+    cv.setMouseCallback("uncropped image (draw a rectangle from the top left to the bottom right corner)", mouseCropping)
 
     while True:
-        i = image.copy()
+        i = img.copy()
         if cropping:
             cv.rectangle(i, (x_start, y_start), (x_end, y_end), (255, 0, 0), 2)
-        cv.imshow("image", i)
+        cv.imshow("uncropped image (draw a rectangle from the top left to the bottom right corner)", i)
 
         key = cv.waitKey(1) & 0xFF
-        if key == ord("q"):  # Press 'q' to exit the loop
+        if key == ord("q"):
             break
 
     cv.destroyAllWindows()
     
+    #save coordinates for cutout
     parameter["x_start"] = x_start
     parameter["x_end"] = x_end
     parameter["y_start"] = y_start
     parameter["y_end"] = y_end
-    
     setParameter(parameter)
     
-    return oriImage[y_start:y_end, x_start:x_end]
+    return imgOriginal[y_start:y_end, x_start:x_end]
+
 
 def extractCameraParameter():
     calib_df = pd.read_json('Alvium1800U-1240c_calib_df.json')

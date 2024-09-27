@@ -1,0 +1,42 @@
+from matplotlib import pyplot as plt
+
+def plotResults(img, imgCropped, imgContrast, imgEdgeFiltered, imgDeblured, imgSegmented):
+    #intermediate results
+    fig1, axs = plt.subplots(2,4)
+    fig1.suptitle("intermediate results")
+    axs[0, 0].set_ylabel("I. preprocessing")
+    axs[0, 0].set_yticklabels([])
+    axs[0, 0].set_xticklabels([])
+    axs[0, 0].set_yticks([])
+    axs[0, 0].set_xticks([])
+    axs[1, 0].set_ylabel("II. segmentation")
+    axs[1, 0].set_yticklabels([])
+    axs[1, 0].set_xticklabels([])
+    axs[1, 0].set_yticks([])
+    axs[1, 0].set_xticks([])
+    axs[0, 0].imshow(imgCropped, cmap='gray')
+    axs[0, 0].title.set_text("(3) shadow corrected\n(cropped) image")
+    axs[0, 1].imshow(imgContrast, cmap='gray')
+    axs[0, 1].title.set_text("(4) contrasted\nimage")
+    axs[0, 1].axis('off')
+    axs[0, 2].imshow(imgEdgeFiltered, cmap='gray')
+    axs[0, 2].title.set_text("(5) edge filtered\nimage")
+    axs[0, 2].axis('off')
+    axs[0, 3].imshow(imgDeblured, cmap='gray')
+    axs[0, 3].title.set_text("(6) deblured\nimage")
+    axs[0, 3].axis('off')
+    axs[1, 0].imshow(imgSegmented, cmap='gray')
+    axs[1, 0].title.set_text("segmented\nimage")
+    axs[1, 1].axis('off')
+    axs[1, 2].axis('off')
+    axs[1, 3].axis('off')
+    plt.show()
+    
+    #final result
+    plt.figure()
+    fig2 = plt.subplot()
+    fig2.imshow(img, cmap = 'gray')
+    plt.title("result")
+    plt.axis('off')
+    plt.show()
+    
