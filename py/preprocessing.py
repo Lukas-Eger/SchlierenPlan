@@ -6,9 +6,10 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from PIL import Image, ImageEnhance
 from matplotlib.widgets import RectangleSelector
-from config import getParameter, setParameter
+from config import getParameter, setParameter, imgDefault
 
 def preprocessing(img, imgBack):
+    global imgDefault
     parameter = getParameter()
     
     #   1. image correction using camera matrix
@@ -23,7 +24,7 @@ def preprocessing(img, imgBack):
             imgBackUndist = imgBack.copy()
     
     #   2. shading correction
-    imgCorrectedShading = None
+    imgCorrectedShading = imgDefault
     if parameter["bgImgAvailable"] and parameter["doShadingCorrection"]:
     #   img = imgBack.mean()*img/imgBack
         imgBackMean = np.mean(imgBack)
@@ -33,7 +34,7 @@ def preprocessing(img, imgBack):
         img = imgCorrectedShading.copy()
     
     #   3. crop image
-    imgCroppedImage = None
+    imgCroppedImage = imgDefault
     if parameter["cropImage"]:
         croppedResponse = input("Would you like to crop the image (again)?\n(Otherwise, the coordinates from the parameters are used.) [y/n]: ")
         if(croppedResponse == "y"):
@@ -42,16 +43,17 @@ def preprocessing(img, imgBack):
             img = img[parameter["y_start"]:parameter["y_end"], parameter["x_start"]:parameter["x_end"]]     
         else:
             sys.exit("Wrong input!")
+        print("cutout coordinates: y_start =", parameter["y_start"], "; y_end =", parameter["y_end"], "; x_start =", parameter["x_start"], "; x_end =", parameter["x_end"])
         imgCroppedImage = img.copy()
         
     #   4. contrast image
-    imgContrast = None
+    imgContrast = imgDefault
     if parameter["setupContrast"]:
         img = cv.convertScaleAbs(img, alpha=parameter["alpha"], beta=parameter["beta"])
         imgContrast = img.copy()
         
     #   5. edge enhancement with different approaches (perhaps after debluring image)
-    imgEdgeFiltered = None
+    imgEdgeFiltered = imgDefault
     if parameter["edgeEnhancement"]:
     #       1 laplacian filter
             imgLaplacianFiltered = cv.Laplacian(img, parameter["ddepthLaplacian"], ksize=parameter["kernelSizeLaplacian"])
@@ -75,7 +77,7 @@ def preprocessing(img, imgBack):
             imgEdgeFiltered= img.copy()
 
     #   6. deblure img with different approaches (perhaps before edge enhancement)
-    imgDeblured= None
+    imgDeblured= imgDefault
     if parameter["deblureImage"]:
     #       1 mean filter:
             imgMeanFiltered = cv.blur(img,(parameter["kernelSizeMeanFilter"],parameter["kernelSizeMeanFilter"]))

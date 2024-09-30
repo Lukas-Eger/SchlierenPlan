@@ -51,7 +51,7 @@ def detect_striae(image, algorithm, *args):
         
         # Apply adaptive thresholding using OpenCV
         T = cv2.adaptiveThreshold(curr_img, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
-                                  cv2.THRESH_BINARY, 409, -0.58)
+                                  cv2.THRESH_BINARY, 63, -0.58)
         bw = T / 255  # Normalize to binary
         
         plt.figure()

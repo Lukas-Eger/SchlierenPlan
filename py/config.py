@@ -1,7 +1,9 @@
 import cv2 as cv
+import numpy as np
 import json
 
 parameter = None
+imgDefault = np.full((50,50), 255)
 
 #please edit 
 def initLocalParameter():
@@ -38,12 +40,27 @@ def initLocalParameter():
         "kernelSizeMeanFilter": 5,
         "gaussianFilteredImage": False,
         "kernelSizeGaussianFilter": 31,
-        "standardDeviation": 0,     #calculated from kernelSize
+        "standardDeviation": 0,         #calculated from kernelSize
         "medianFilteredImage": True,
         "kernelSizeMedianFilter":9,
         "bilateralFilteredImage": False,
-        "bilateralFilterDiameter": 31,   #diameter of each pixel neighborhood that is used during filtering
-        "bilateralFilterSigma": 250  #<10: no effect >150: huge effect on outcome
+        "bilateralFilterDiameter": 31,  #diameter of each pixel neighborhood that is used during filtering
+        "bilateralFilterSigma": 250,    #<10: no effect >150: huge effect on outcome
+        
+        "seedPointFloodFill": (0,0),
+        "lowerTolFloodFill": 12,
+        "upperTolFloodFill": 12,
+        "kernelSizeOpening": 3,
+        "kernelSizeClosing": 7,
+        
+        "doCannySegmentation": False,
+        
+        "doThresholdSegmentation": True,
+        "adaptiveMethodThreshold": cv.ADAPTIVE_THRESH_GAUSSIAN_C,   #other mode: cv.ADAPTIVE_THRESH_MEAN_C
+        "numberOfNeighborsThreshold": 15,
+        "subtractedConstantThreshold": 2,
+        "kernelSizeClosingThreshold": 3,
+        "doClosingThreshold": True
     }
 
 def readParameterFromFile(filename):
