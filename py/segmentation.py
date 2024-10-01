@@ -9,8 +9,10 @@ def segmentation(img):
     #   0. create mask for background
     height, width = img.shape[:2]
     #       .1 flood fill
-    m = np.zeros((height + 2, width + 2), np.uint8)
     maskFloodFill = img.copy()
+    if parameter["meanFilterFloodFill"]:
+        maskFloodFill = cv.blur(maskFloodFill,(parameter["kernelMeanFloodFill"],parameter["kernelMeanFloodFill"]))
+    m = np.zeros((height + 2, width + 2), np.uint8)
     cv.floodFill(maskFloodFill, m, parameter["seedPointFloodFill"], 0, parameter["lowerTolFloodFill"], parameter["upperTolFloodFill"])
     #       .2 opening (erosion) "to remove small white regions"
     kernelOpening = np.ones((parameter["kernelSizeOpening"], parameter["kernelSizeOpening"]), np.uint8)

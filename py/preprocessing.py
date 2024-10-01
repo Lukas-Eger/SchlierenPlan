@@ -43,7 +43,7 @@ def preprocessing(img, imgBack):
             img = img[parameter["y_start"]:parameter["y_end"], parameter["x_start"]:parameter["x_end"]]     
         else:
             sys.exit("Wrong input!")
-        print("cutout coordinates: y_start =", parameter["y_start"], "; y_end =", parameter["y_end"], "; x_start =", parameter["x_start"], "; x_end =", parameter["x_end"])
+        print("cutout coordinates: y_start =", parameter["y_start"], "; y_end =", parameter["y_end"], "; x_start =", parameter["x_start"], "; x_end =", parameter["x_end"], "\n")
         imgCroppedImage = img.copy()
         
     #   4. contrast image
