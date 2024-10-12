@@ -134,7 +134,9 @@ def imageCropping(image):
 
     cv2.destroyAllWindows()
     return oriImage[y_start:y_end, x_start:x_end]
-
+def imageCropping(img):
+    bild=img.copy() 
+    return bild[700:1361,2000:2500]
 """
 done = False
 def CropImage(img):

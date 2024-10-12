@@ -15,24 +15,27 @@ img=cv.imread('../img/V2/ancycamsy_5mm_.bmp',cv.IMREAD_GRAYSCALE)
 imgBack=cv.imread('../img/V2/bildohne5mm.bmp',cv.IMREAD_GRAYSCALE)
 
 #einlesne der Paremter
-'''
+
+with open('config.json', 'r') as f:
+  parameter = json.load(f)
+
 parameter = {
     "bgImgAvailable" : True,
     
-    "doShadingCorrection": True,
+    "doShadingCorrection": False,
     
     "cropImage": True,
     
     "setupContrast": True,
-    "alpha": 1.8,   #lower contrast: alpha < 1, higher contrast alpha > 1 
-    "beta": -30,    #brightness -127 < beta < 127
+    "alpha": 1.6,   #lower contrast: alpha < 1, higher contrast alpha > 1 
+    "beta": 80,    #brightness -127 < beta < 127
     
     "edgeEnhancement": True,
     "laplacianFilteredImage": False,
     "ddepthLaplacian": cv.CV_8U,    #CV_8U, CV_16S, CV_32F, CV_64F
     "kernelSizeLaplacian": 7,
     "pillowSharpendImage": True,
-    "factorSharpness": 21.0,
+    "factorSharpness": 30.0,
     "sobeFilteredImage": False,
     "kernelSizeSobelFilter": 7,
     "ddepthSobel": cv.CV_8U,        #CV_8U, CV_16S, CV_32F, CV_64F
@@ -50,9 +53,6 @@ parameter = {
     "bilateralFilterDiameter": 31,   #diameter of each pixel neighborhood that is used during filtering
     "bilateralFilterSigma": 250  #<10: no effect >150: huge effect on outcome
 }
-'''
-with open('config.json', 'r') as f:
-  parameter = json.load(f)
 
 plt.close("all")
 #einlesen Kamerametrix
@@ -79,6 +79,7 @@ fig7 = plt.subplot()
 fig7.imshow(imgCroppedImage, cmap = 'gray')
 plt.title('x. imgCorrectedShading')
 plt.axis('off')
+
 plt.figure()
 plt.imshow(imgContrast,  cmap = 'gray')
 plt.title("imgContrast scheis")
@@ -93,6 +94,7 @@ plt.figure()
 plt.imshow(imgDeblured,  cmap = 'gray')
 plt.title("geiler scheis")
 plt.show()
+'''
 response = input("möchten sie das result speichern (y/n)")
 
 if(response=="y"):
@@ -102,3 +104,4 @@ if(response=="y"):
     cv.imwrite((filename+postfix+'.png'), img)
     with open(filename+'config'+postfix+'.json', 'w') as json_file:
       json.dump(parameter, json_file)
+      '''
