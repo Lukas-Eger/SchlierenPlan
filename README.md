@@ -7,10 +7,10 @@ This repo contains the **Python code** for the **image processing pipeline**, as
 We recommend using our virtual environment created with Anaconda to avoid conflicts between different version of packages.<br>
 Importing the environment and then activating it with Anaconda works as follows:
 ```
-		conda create --name <env_name> -f env_sp311.yml
+conda create --name <env_name> -f env_sp311.yml
 
-		conda activate <env_name>
+conda activate <env_name>
 ```
 Our image processing pipline is implemented in */example/example.py*. It uses the specially developed SPImageProcessing package in */src/SPImageProcessing.* Which images or parameters are accessed in */img* can be set in the example script. The parameters for images processing can be configured in */example/config.py*.<br>
 The resulting images of the final test setup are stored in */img/T04*.<br>
-![alt text](./img/T03/T03_Test_Setup.jpg =385x166 "Test Setup 3")
+![alt text](./img/T03/T03_Test_Setup.jpg "Test Setup 3")
