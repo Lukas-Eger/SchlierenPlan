@@ -17,13 +17,13 @@ def initLocalParameter():
         "doShadingCorrection": True,
         
         "cropImage": True,
-        "y_start": 655,
-        "y_end": 1770,
-        "x_start": 1458,
-        "x_end": 2596,
+        "y_start": 911,
+        "y_end": 1578,
+        "x_start": 1590,
+        "x_end": 2407,
        
         "setupContrast": True,
-        "alpha": 3.2,  #lower contrast: alpha < 1, higher contrast alpha > 1 
+        "alpha": 2.5,  #lower contrast: alpha < 1, higher contrast alpha > 1 
         "beta": -30,    #brightness -127 < beta < 127
         
         "edgeEnhancement": True,
@@ -36,7 +36,7 @@ def initLocalParameter():
         "kernelSizeSobelFilter": 7,
         "ddepthSobel": cv.CV_8U,        #CV_8U, CV_16S, CV_32F, CV_64F
         
-        "deblureImage": True,
+        "deblureImage": False,
         "meanFilteredImage": False,
         "kernelSizeMeanFilter": 3,
         "gaussianFilteredImage": False,
@@ -48,21 +48,21 @@ def initLocalParameter():
         "bilateralFilterDiameter": 31,  #diameter of each pixel neighborhood that is used during filtering
         "bilateralFilterSigma": 250,    #<10: no effect >150: huge effect on outcome
         
-        "meanFilterFloodFill": True,
-        "kernelMeanFloodFill": 17,
+        "meanFilterFloodFill": False,
+        "kernelMeanFloodFill": 21,
         "seedPointFloodFill": (0,0),
-        "lowerTolFloodFill": 1,
-        "upperTolFloodFill": 1,
-        "kernelSizeOpening": 31,
+        "lowerTolFloodFill": 2,
+        "upperTolFloodFill": 2,
+        "kernelSizeOpening": 7,
         "kernelSizeClosing": 7,
         
         "doCannySegmentation": False,
         
         "doThresholdSegmentation": True,
         "adaptiveMethodThreshold": cv.ADAPTIVE_THRESH_GAUSSIAN_C,   #other mode: cv.ADAPTIVE_THRESH_MEAN_C
-        "numberOfNeighborsThreshold": 31,
+        "numberOfNeighborsThreshold": 125,
         "subtractedConstantThreshold": 2,
-        "kernelSizeClosingThreshold": 3,
+        "kernelSizeClosingThreshold": 2,
         "doClosingThreshold": True
     }
 #----------------------------------------------------------------------------------------

@@ -1,6 +1,18 @@
+import sys
+import os
+import numpy as np
 from matplotlib import pyplot as plt
 
-def plotResults(img, imgCropped, imgContrast, imgEdgeFiltered, imgDeblured, maskFloodFill, maskOpening, maskNoForeground, maskClosing, imgSegmented):
+current_dir = os.path.dirname(__file__)
+example_path = os.path.abspath(os.path.join(current_dir, '../../example'))
+sys.path.append(example_path)
+
+from config import getParameter, setParameter, imgDefault
+
+
+def plotResults(img, imgColored, imgCropped, imgContrast, imgEdgeFiltered, imgDeblured, maskFloodFill, maskOpening, maskNoForeground, maskClosing, imgSegmented):
+    parameter = getParameter()
+    
     #intermediate results
     fig1, axs = plt.subplots(2,5)
     fig1.suptitle("intermediate results")
@@ -59,7 +71,7 @@ def plotResults(img, imgCropped, imgContrast, imgEdgeFiltered, imgDeblured, mask
     #final result
     fig2, axs2 = plt.subplots(1,2)
     fig2.suptitle("result")
-    axs2[0].imshow(imgCropped, cmap='gray', vmin=0, vmax=255)
+    axs2[0].imshow(imgColored[parameter["y_start"]:parameter["y_end"],parameter["x_start"]:parameter["x_end"]])
     axs2[0].title.set_text("captured\nshadow image")
     axs2[0].axis('off')
     axs2[1].imshow(imgSegmented, cmap='gray', vmin=0, vmax=255)

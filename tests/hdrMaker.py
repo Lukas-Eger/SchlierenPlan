@@ -11,16 +11,16 @@ plt.close("all")
 
 #   img:                '../img/Tyy/xx_Tyy_zzzzzzz_iii.ext'
 #--------- PLEASE CONFIGURE ------------
-Tyy             = 'T99'         #number of test experiment yy
-xx              = '00'          #number of image xx
-zzzzzzz0        = '15000000'    #highest exposure time in us
-zzzzzzz1        = '2500000'     #high exposure time in us
-zzzzzzz2        = '250000'      #low exposure time in us
-zzzzzzz3        = '33300'       #lowest exposure time in us
+Tyy             = 'T04'         #number of test experiment yy
+xx              = '01'          #number of image xx
+zzzzzzz0        = '3000466'     #highest exposure time in us
+zzzzzzz1        = '2000030'     #high exposure time in us
+zzzzzzz2        = '800447'      #low exposure time in us
+zzzzzzz3        = '309463'      #lowest exposure time in us
 iii             = 'img'         #choose betweeng img or imgBack
-ext             = '.jpg'        #file extension: .bmp, .jpg, .png
+ext             = '.bmp'        #file extension: .bmp, .jpg, .png
 
-gammaDebevec    = 1
+gammaDebevec    = 1.5
 gammaRobertson  = 1.5
 #----------------------------------------
 img0Dir                 = '../img/'+Tyy+'/'+xx+'_'+Tyy+'_'+zzzzzzz0+'_'+iii+ext
@@ -31,7 +31,7 @@ imgResultDir            = '../img/'+Tyy+'/'+xx+'_'+Tyy+'_hdr_'+iii+ext
 
 #Loading exposure images + exposure times
 imgLocations = [img0Dir, img1Dir, img2Dir, img3Dir]
-imgList = [cv.imread(loc) for loc in imgLocations]
+imgList = [cv.cvtColor(cv.imread(loc), cv.COLOR_BGR2RGB) for loc in imgLocations]
 exposureTime0 = np.float32(zzzzzzz0)/1000000.0
 exposureTime1 = np.float32(zzzzzzz1)/1000000.0
 exposureTime2 = np.float32(zzzzzzz2)/1000000.0
@@ -44,7 +44,7 @@ mergeDebevec = cv.createMergeDebevec()
 hdrDebevec = mergeDebevec.process(imgList, times=exposureTimes.copy())
 #tonemap1 = cv.createTonemap(gamma=gammaDebevec) #map data into the range [0..1]
 #tonemap1 = cv.createTonemapDrago(gamma=gammaDebevec)
-#tonemap1 = cv.createTonemapMantiku(gamma=gammaDebevec)
+#tonemap1 = cv.createTonemapMantiuk(gamma=gammaDebevec)
 tonemap1 = cv.createTonemapReinhard(gamma=gammaDebevec)
 resDebevec = tonemap1.process(hdrDebevec.copy())
 #   2. Robertson
@@ -52,7 +52,7 @@ mergeRobertson = cv.createMergeRobertson()
 hdrRobertson = mergeRobertson.process(imgList, times=exposureTimes.copy())
 #tonemap2 = cv.createTonemap(gamma=gammaRobertson)  #map data into the range [0..1]
 #tonemap2 = cv.createTonemapDrago(gamma=gammaRobertson)
-#tonemap2 = cv.createTonemapMantiku(gamma=gammaRobertson)
+#tonemap2 = cv.createTonemapMantiuk(gamma=gammaRobertson)
 tonemap2 = cv.createTonemapReinhard(gamma=gammaRobertson)
 resRobertson = tonemap2.process(hdrRobertson.copy())
 #   3. Mertens
@@ -116,13 +116,13 @@ if hdrResponse == 'y':
     whichOneResponse = input("Which hdr image would you like to save? [1/2/3]: ")
     if whichOneResponse == '1':
         print("You saved a Debevec hdr image!\n")
-        cv.imwrite(imgResultDir, imgDebevec8bit)
+        cv.imwrite(imgResultDir, cv.cvtColor(imgDebevec8bit, cv.COLOR_RGB2BGR))
     elif whichOneResponse == '2':
         print("You saved a Robertson hdr image!\n")
-        cv.imwrite(imgResultDir, imgRobertson8bit8bit)
+        cv.imwrite(imgResultDir, cv.cvtColor(imgRobertson8bit8bit, cv.COLOR_RGB2BGR))
     elif whichOneResponse == '3':
         print("You saved a Mertens hdr image!\n")
-        cv.imwrite(imgResultDir, imgMertens8bit)
+        cv.imwrite(imgResultDir, cv.cvtColor(imgMertens8bit, cv.COLOR_RGB2BGR))
     else:
         sys.exit("Wrong input!")
 elif hdrResponse == 'n':

@@ -22,14 +22,14 @@ plt.close("all")
 #   imgResult:          '../img/Tyy/xx_Tyy_zzzzzzz_imgResult_YYYY_mm_dd_HH_MM.ext'
 #   parameterResult:    '../img/Tyy/xx_Tyy_zzzzzzz_parameter_YYYY_mm_dd_HH_MM.json'
 #--------- PLEASE CONFIGURE ------------
-Tyy         = 'T03'         #number of test experiment yy
+Tyy         = 'T04'         #number of test experiment yy
 xx          = '01'          #number of image xx
-zzzzzzz     = '82798'       #exposure time in us (unknown: 'zzzzzzz') or 'hdr' for High Dynamic Range Image
+zzzzzzz     = 'hdr'         #exposure time in us (unknown: 'zzzzzzz') or 'hdr' for High Dynamic Range Image
 YYYY        = '2024'        #year YYYY
 mm          = '10'          #month mm
-dd          = '01'          #day dd
-HH          = '23'          #hour HH
-MM          = '02'          #minute MM
+dd          = '21'          #day dd
+HH          = '18'          #hour HH
+MM          = '16'          #minute MM
 ext         = '.bmp'        #file extension: .bmp, .jpg, .png
 #----------------------------------------
 imgDir                 = '../img/'+Tyy+'/'+xx+'_'+Tyy+'_'+zzzzzzz+'_img'+ext
@@ -41,7 +41,9 @@ savedParameterDir      = '../img/'+Tyy+'/'+xx+'_'+Tyy+'_'+zzzzzzz+'_parameterRes
 
 #reading in images
     #img of sample
-img = cv.imread(imgDir, cv.IMREAD_GRAYSCALE)
+img = cv.cvtColor(cv.imread(imgDir), cv.COLOR_BGR2RGB) 
+imgColored = img.copy()
+img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
 if img.any() == None: 
     print("Warning: No img could be loaded!\n")
     #img of background
@@ -67,7 +69,7 @@ img, _, _, _, imgCropped, imgContrast, imgEdgeFiltered, imgDeblured = spip.prepr
 img, maskFloodFill, maskOpening, maskNoForeground, maskClosing, imgSegmented = spip.segmentation(img)
 
 #show (intermediate) results
-spip.plotResults(img, imgCropped, imgContrast, imgEdgeFiltered, imgDeblured, maskFloodFill, maskOpening, maskNoForeground, maskClosing, imgSegmented)
+spip.plotResults(img, imgColored, imgCropped, imgContrast, imgEdgeFiltered, imgDeblured, maskFloodFill, maskOpening, maskNoForeground, maskClosing, imgSegmented)
 
 #save result and parameters
 saveResponse = input("Do you want to store the result (+ parameters) [y/n]: ")
